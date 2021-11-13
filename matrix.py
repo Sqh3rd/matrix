@@ -28,9 +28,9 @@ class Matrix:
 	def add(self, x):
 		if not type(x) is Matrix:
 			raise NotImplementedError
-		if not len(x.values) == len(self.values) and len(x.values[0]) == len(self.values[0]):
+		if not (len(x.values) == len(self.values) and len(x.values[0]) == len(self.values[0])):
 			raise NotImplementedError
-		return Matrix(values=[[x.values[i][c] + d for c, d in enumerate(self.values[i])] for i in range(len(self.values))])
+		return Matrix(values = [[x.values[i][c] + d for c, d in enumerate(self.values[i])] for i in range(len(self.values))])
 
 	def sub(self, first_val, second_val):
 		if type(first_val) is Matrix and type(second_val) is Matrix:
@@ -54,7 +54,7 @@ class Matrix:
 			for i in range(first_value.lines):
 				new_values.append([])
 				for j in range(second_value.columns):
-					new_values[i].append(sum([first_value.values[i][a] * second_value.values[a][i] for a in range(first_value.columns)]))
+					new_values[i].append(sum([first_value.values[i][a] * second_value.values[a][j] for a in range(first_value.columns)]))
 			return Matrix(values = new_values)
 		raise NotImplementedError
 
@@ -98,7 +98,7 @@ class Matrix:
 		return True
 
 if __name__ == '__main__':
-	m = Matrix(values = [[2,2],[3,3]])
-	b = Matrix(values = [[4,4],[5,5]])
-	c = m.transpose()
-	print(c)
+	m = Matrix(values = [[1,2,3], [4,5,6], [7,8,9]])
+	h = Matrix(lines = 3, columns = 5)
+	print(m)
+	print(h)
