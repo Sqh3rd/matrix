@@ -1,47 +1,74 @@
 from __future__ import annotations
+from math import ceil
 
 
-def kernel_multiplicate(first_value: Matrix,
-                        second_value: Matrix,
-                        stride_length: int = 1) -> Matrix:
-    if first_value.columns > second_value.columns and first_value.lines > second_value.lines:
-        greater_value = first_value
-        smaller_value = second_value
-    elif first_value.columns < second_value.columns and first_value.lines < first_value.lines:
-        greater_value = second_value
-        smaller_value = first_value
+def kernel_multiplicate(first_matrix: Matrix,
+                        second_matrix: Matrix,
+                        stride_length: int = 1,
+                        crop_to_val: int = 0,
+                        get_average: bool = False) -> Matrix:
+    if first_matrix.columns > second_matrix.columns and first_matrix.lines > second_matrix.lines:
+        greater_value = first_matrix
+        smaller_value = second_matrix
+    elif first_matrix.columns < second_matrix.columns and first_matrix.lines < second_matrix.lines:
+        greater_value = second_matrix
+        smaller_value = first_matrix
     else:
-        raise ValueError
+        raise Exception("One Matrix has to be smaller than the other!")
     if ((greater_value.lines - smaller_value.lines) % stride_length != 0 or
         (greater_value.columns - smaller_value.columns) % stride_length != 0):
         raise ValueError
     result_matrix = Matrix(
-        lines=1 + int(
-            (greater_value.lines - smaller_value.lines) / stride_length),
-        columns=1 + int((greater_value.columns - smaller_value.columns)),
+        lines=int((greater_value.lines - smaller_value.lines) / stride_length),
+        columns=int(
+            (greater_value.columns - smaller_value.columns) / stride_length),
     )
     temp_sum = 0
+    if crop_to_val != 0:
+        max_sum = 0
     values_for_new_matrix = []
-    for lin_stride in range(greater_value.lines - smaller_value.lines + 1):
+    inc = 0
+    for lin_stride in range(0, greater_value.lines - smaller_value.lines,
+                            stride_length):
         values_for_new_matrix.append([])
-        for col_stride in range(greater_value.columns - smaller_value.columns +
-                                1):
+        for col_stride in range(0,
+                                greater_value.columns - smaller_value.columns,
+                                stride_length):
             temp_sum = sum([
-                greater_value.values[lin + lin_stride * stride_length][
-                    col + col_stride * stride_length] *
+                greater_value.values[lin + lin_stride][col + col_stride] *
                 smaller_value.values[lin][col]
-                for col in range(smaller_value.columns)
-                for lin in range(smaller_value.lines)
+                for col in range(0, smaller_value.columns, 1)
+                for lin in range(0, smaller_value.lines, 1)
             ])
-            values_for_new_matrix[lin_stride].append(temp_sum)
-    result_matrix.edit(indices=[(a, b)
-                                for a in range(len(values_for_new_matrix))
-                                for b in range(len(values_for_new_matrix[a]))],
-                       values=[
-                           values_for_new_matrix[a][b]
-                           for a in range(len(values_for_new_matrix))
-                           for b in range(len(values_for_new_matrix[a]))
-                       ])
+            if get_average:
+                temp_sum = temp_sum / (smaller_value.lines *
+                                       smaller_value.columns)
+            values_for_new_matrix[inc].append(temp_sum if temp_sum > 0 else 0)
+            if crop_to_val != 0:
+                if temp_sum > max_sum:
+                    max_sum = temp_sum
+        inc += 1
+    if crop_to_val == 0:
+        result_matrix.edit(indices=[
+            (a, b) for a in range(len(values_for_new_matrix))
+            for b in range(len(values_for_new_matrix[a]))
+        ],
+                           values=[
+                               values_for_new_matrix[a][b]
+                               for a in range(len(values_for_new_matrix))
+                               for b in range(len(values_for_new_matrix[a]))
+                           ])
+    else:
+        scale_factor = crop_to_val / (max_sum if max_sum > 0 else 1)
+        result_matrix.edit(
+            indices=[(a, b) for a in range(len(values_for_new_matrix))
+                     for b in range(len(values_for_new_matrix[a]))],
+            values=[
+                ceil(values_for_new_matrix[a][b] * scale_factor) if
+                ceil(values_for_new_matrix[a][b] * scale_factor) < 255 else 255
+                for a in range(len(values_for_new_matrix))
+                for b in range(len(values_for_new_matrix[a]))
+            ])
     return result_matrix
 
 
