@@ -6,7 +6,9 @@ def kernel_multiplicate(first_matrix: Matrix,
                         second_matrix: Matrix,
                         stride_length: int = 1,
                         crop_to_val: int = 0,
-                        get_average: bool = False) -> Matrix:
+                        get_average: bool = False,
+                        get_difference: bool = False,
+                        keep_size: bool=False) -> Matrix:
     if first_matrix.columns > second_matrix.columns and first_matrix.lines > second_matrix.lines:
         greater_value = first_matrix
         smaller_value = second_matrix
@@ -18,6 +20,12 @@ def kernel_multiplicate(first_matrix: Matrix,
     if ((greater_value.lines - smaller_value.lines) % stride_length != 0 or
         (greater_value.columns - smaller_value.columns) % stride_length != 0):
         raise ValueError
+    if keep_size:
+        greater_value.insert_line(0)
+        greater_value.insert_line(-1)
+        greater_value.insert_column(0)
+        greater_value.insert_column(-1)
+
     result_matrix = Matrix(
         lines=int((greater_value.lines - smaller_value.lines) / stride_length),
         columns=int(
@@ -34,12 +42,29 @@ def kernel_multiplicate(first_matrix: Matrix,
         for col_stride in range(0,
                                 greater_value.columns - smaller_value.columns,
                                 stride_length):
-            temp_sum = sum([
-                greater_value.values[lin + lin_stride][col + col_stride] *
-                smaller_value.values[lin][col]
-                for col in range(0, smaller_value.columns, 1)
-                for lin in range(0, smaller_value.lines, 1)
-            ])
+            if not get_difference:
+                temp_sum = sum([
+                    greater_value.values[lin + lin_stride][col + col_stride] *
+                    smaller_value.values[lin][col]
+                    for col in range(0, smaller_value.columns, 1)
+                    for lin in range(0, smaller_value.lines, 1)
+                ])
+            else:
+                if smaller_value.columns % 2 == 0 or smaller_value.lines % 2 == 0:
+                    raise Exception('The smaller Matrix has to have an uneven number of lines and columns!')
+                middle_col = int(smaller_value.columns / 2 - (1 if smaller_value.columns / 2 % 2 == 0 else 0.5))
+                middle_lin = int(smaller_value.lines / 2 - (1 if smaller_value.columns / 2 % 2 == 0 else 0.5))
+                for lin in range(smaller_value.lines):
+                    for col in range(smaller_value.columns):
+                        if col == middle_col and lin == middle_lin:
+                            continue
+                        temp_sum += abs(
+                            greater_value.values[lin + lin_stride][
+                                col + col_stride] *
+                            smaller_value.values[lin][col] -
+                            greater_value.values[middle_lin + lin_stride][
+                                middle_col + col_stride] *
+                            smaller_value.values[lin][col])
             if get_average:
                 temp_sum = temp_sum / (smaller_value.lines *
                                        smaller_value.columns)
@@ -163,6 +188,19 @@ class Matrix:
         for i in range(len(indices)):
             self.values[indices[i][0]][indices[i][1]] = values[i]
 
+    def insert_line(self, index: int) -> None:
+        if index < 0:
+            index = self.columns - index
+        self.values.insert(index, [0 for i in range(self.columns)])
+        self.lines += 1
+
+    def insert_column(self, index: int) -> None:
+        if index < 0:
+            index = self.lines - index
+        for i in range(self.lines):
+            self.values[i].insert(index, 0)
+        self.columns += 1
+
     def __repr__(self) -> str:
         return f"{self.lines}x{self.columns}-Matrix"
 
@@ -204,8 +242,7 @@ class Matrix:
         return True
 
 
-if __name__ == "__main__":
-    m = Matrix(values=[[1, 0, 1], [0, 1, 0], [1, 0, 1]])
-    h = Matrix(values=[[1, 1, 1, 0, 0], [0, 1, 1, 1, 0], [0, 0, 1, 1, 1],
-                       [0, 0, 1, 1, 0], [0, 1, 1, 0, 0]])
-    print(Matrix.kernel_multiplicate(h, m))
+if __name__ == '__main__':
+    a = Matrix(lines=3, columns=3)
+    b = Matrix(lines=5, columns=5)
+    print(kernel_multiplicate(a, b, 1, 0, False, True))
