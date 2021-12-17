@@ -1,5 +1,6 @@
 from __future__ import annotations
 from math import ceil
+import numpy as np
 
 
 def kernel_multiplicate(first_matrix: Matrix,
@@ -9,6 +10,8 @@ def kernel_multiplicate(first_matrix: Matrix,
                         get_average: bool = False,
                         get_difference: bool = False,
                         keep_size: bool=False) -> Matrix:
+    greater_value = Matrix()
+    smaller_value = Matrix()
     if first_matrix.columns > second_matrix.columns and first_matrix.lines > second_matrix.lines:
         greater_value = first_matrix
         smaller_value = second_matrix
@@ -21,15 +24,11 @@ def kernel_multiplicate(first_matrix: Matrix,
         (greater_value.columns - smaller_value.columns) % stride_length != 0):
         raise ValueError
     if keep_size:
-        greater_value.insert_line(0)
-        greater_value.insert_line(-1)
-        greater_value.insert_column(0)
-        greater_value.insert_column(-1)
-
+        greater_value = greater_value.insert_outer_boundary()
+        print(f"Greater Val: {repr(greater_value)}")
     result_matrix = Matrix(
-        lines=int((greater_value.lines - smaller_value.lines) / stride_length),
-        columns=int(
-            (greater_value.columns - smaller_value.columns) / stride_length),
+        lines=int((greater_value.lines - smaller_value.lines) / stride_length) + 1,
+        columns=int((greater_value.columns - smaller_value.columns) / stride_length) + 1,
     )
     temp_sum = 0
     if crop_to_val != 0:
@@ -107,6 +106,8 @@ class Matrix:
         elif len(values[0]) < 1:
             for val in values:
                 val = [0]
+        elif type(values) == np.ndarray:
+            values = values.tolist()
         if lines < 1:
             lines = 1
         if columns < 1:
@@ -200,6 +201,14 @@ class Matrix:
         for i in range(self.lines):
             self.values[i].insert(index, 0)
         self.columns += 1
+
+    def insert_outer_boundary(self) -> Matrix:
+        return_matrix = Matrix(values = self.values)
+        return_matrix.insert_line(0)
+        return_matrix.insert_line(-1)
+        return_matrix.insert_column(0)
+        return_matrix.insert_column(-1)
+        return return_matrix
 
     def __repr__(self) -> str:
         return f"{self.lines}x{self.columns}-Matrix"
