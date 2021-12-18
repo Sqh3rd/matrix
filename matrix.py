@@ -1,7 +1,7 @@
 from __future__ import annotations
 from math import ceil
 import numpy as np
-
+from copy import deepcopy
 
 def kernel_multiplicate(first_matrix: Matrix,
                         second_matrix: Matrix,
@@ -10,14 +10,14 @@ def kernel_multiplicate(first_matrix: Matrix,
                         get_average: bool = False,
                         get_difference: bool = False,
                         keep_size: bool=False) -> Matrix:
-    greater_value = Matrix()
-    smaller_value = Matrix()
+    greater_value = None
+    smaller_value = None
     if first_matrix.columns > second_matrix.columns and first_matrix.lines > second_matrix.lines:
-        greater_value = first_matrix
-        smaller_value = second_matrix
+        greater_value = deepcopy(first_matrix)
+        smaller_value = deepcopy(second_matrix)
     elif first_matrix.columns < second_matrix.columns and first_matrix.lines < second_matrix.lines:
-        greater_value = second_matrix
-        smaller_value = first_matrix
+        greater_value = deepcopy(second_matrix)
+        smaller_value = deepcopy(first_matrix)
     else:
         raise Exception("One Matrix has to be smaller than the other!")
     if ((greater_value.lines - smaller_value.lines) % stride_length != 0 or
@@ -25,10 +25,9 @@ def kernel_multiplicate(first_matrix: Matrix,
         raise ValueError
     if keep_size:
         greater_value = greater_value.insert_outer_boundary()
-        print(f"Greater Val: {repr(greater_value)}")
     result_matrix = Matrix(
         lines=int((greater_value.lines - smaller_value.lines) / stride_length) + 1,
-        columns=int((greater_value.columns - smaller_value.columns) / stride_length) + 1,
+        columns=int((greater_value.columns - smaller_value.columns) / stride_length) + 1
     )
     temp_sum = 0
     if crop_to_val != 0:
@@ -211,7 +210,7 @@ class Matrix:
         return return_matrix
 
     def __repr__(self) -> str:
-        return f"{self.lines}x{self.columns}-Matrix"
+        return f"{len(self.values)}x{len(self.values[0])}-Matrix"
 
     def __str__(self) -> str:
         strings = [["|".join([str(b) for b in a])] for a in self.values]
