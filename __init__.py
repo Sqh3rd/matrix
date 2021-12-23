@@ -1,1 +1,1 @@
-from .matrix import Matrix, kernel_multiplicate
+from .matrix import *
