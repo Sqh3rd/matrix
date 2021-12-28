@@ -126,6 +126,18 @@ class Matrix:
             for b in range(self.columns()):
                 self.values[a][b] *= ratio
 
+    def replace(self, old_number:float, new_number:float) -> None:
+        for i in range(len(self.values)):
+            for j in range(len(self.values[i])):
+                if self.values[i][j] == old_number:
+                    self.values[i][j] = new_number
+
+    def replace_multiple(self, old_numbers:list[float], new_number:float) -> None:
+        for i in range(len(self.values)):
+            for j in range(len(self.values[i])):
+                if self.values[i][j] in old_numbers:
+                    self.values[i][j] = new_number
+
     def __repr__(self) -> str:
         return f"{len(self.values)}x{len(self.values[0])}-Matrix"
 
