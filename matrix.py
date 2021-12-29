@@ -138,6 +138,23 @@ class Matrix:
                 if self.values[i][j] in old_numbers:
                     self.values[i][j] = new_number
 
+    def count_values(self) -> list[list]:
+        try:
+            end_list = [[0,0]]
+            for value in self.values:
+                for val in value:
+                    is_in_list = False
+                    for e in end_list:
+                        if val == e[1]:
+                            e[0] += 1
+                            is_in_list = True
+                    if not is_in_list:
+                        end_list.append([1,val])
+            return end_list
+        except Exception as e:
+            print(e)
+            raise Exception()
+
     def __repr__(self) -> str:
         return f"{len(self.values)}x{len(self.values[0])}-Matrix"
 
