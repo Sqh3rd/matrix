@@ -126,17 +126,35 @@ class Matrix:
             for b in range(self.columns()):
                 self.values[a][b] *= ratio
 
-    def replace(self, old_number:float, new_number:float) -> None:
-        for i in range(len(self.values)):
-            for j in range(len(self.values[i])):
-                if self.values[i][j] == old_number:
-                    self.values[i][j] = new_number
+    def replace(self, old_number:float, new_number:float, return_matrix=False) -> None or Matrix:
+        temp_vals = self.values
+        for i in range(len(temp_vals)):
+            for j in range(len(temp_vals[i])):
+                if temp_vals[i][j] == old_number:
+                    temp_vals[i][j] = new_number
+        if return_matrix:
+            return Matrix(values=temp_vals)
+        self.values=temp_vals
 
-    def replace_multiple(self, old_numbers:list[float], new_number:float) -> None:
+    def replace_multiple(self, old_numbers:list[float], new_number:float, return_matrix=False) -> None or Matrix:
+        temp_vals = self.values
+        for i in range(len(temp_vals)):
+            for j in range(len(temp_vals[i])):
+                if temp_vals[i][j] in old_numbers:
+                    temp_vals[i][j] = new_number
+        if return_matrix:
+            return Matrix(values=temp_vals)
+        self.values=temp_vals
+    
+    def replace_between(self, inclusive_minimum:float, inclusive_maximum:float, new_number:float, return_matrix=False) -> None or Matrix:
+        temp_vals = self.values
         for i in range(len(self.values)):
             for j in range(len(self.values[i])):
-                if self.values[i][j] in old_numbers:
-                    self.values[i][j] = new_number
+                if inclusive_minimum <= temp_vals[i][j] <= inclusive_maximum:
+                    temp_vals[i][j] = new_number
+        if return_matrix:
+            return Matrix(values=temp_vals)
+        self.values = temp_vals
 
     def count_values(self) -> list[list]:
         try:
