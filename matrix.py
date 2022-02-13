@@ -306,20 +306,23 @@ def kernel_multiplicate(first_matrix: Matrix,
             ])
     return result_matrix
 
-def pooling(inp_matrix:Matrix, pool_kernel_size:tuple, avg_or_max:int) -> Matrix:
-    end_arr = []
-    if inp_matrix.lines() % pool_kernel_size[0] != 0 or inp_matrix.columns() % pool_kernel_size[1] != 0:
-        raise Exception("Lines and Columns of Input Matrix have to be dividable by the Pool Kernel Size!")
-    for i in range(0, inp_matrix.lines(), pool_kernel_size[0]):
-        end_arr.append([])
-        for j in range(0, inp_matrix.columns(), pool_kernel_size[1]):
-            current_rect = [inp_matrix.values[k][h] for k in range(i, i + pool_kernel_size[0]) for h in range(j, j + pool_kernel_size[1])]
-            if avg_or_max == 0:
-                result = sum(current_rect)/(pool_kernel_size[0]*pool_kernel_size[1])
-            else:
-                result = max(current_rect)
-            end_arr[-1].append(result)
-    return Matrix(values=end_arr)
+def pooling(inp_matrix:Matrix, pool_kernel_size:tuple, avg_or_max:int, iterations=1) -> Matrix:
+    matrix = inp_matrix
+    for i in range(iterations):
+        end_arr = []
+        if matrix.lines() % pool_kernel_size[0] != 0 or matrix.columns() % pool_kernel_size[1] != 0:
+            raise Exception("Lines and Columns of Input Matrix have to be dividable by the Pool Kernel Size!")
+        for i in range(0, matrix.lines(), pool_kernel_size[0]):
+            end_arr.append([])
+            for j in range(0, matrix.columns(), pool_kernel_size[1]):
+                current_rect = [matrix.values[k][h] for k in range(i, i + pool_kernel_size[0]) for h in range(j, j + pool_kernel_size[1])]
+                if avg_or_max == 0:
+                    result = sum(current_rect)/(pool_kernel_size[0]*pool_kernel_size[1])
+                else:
+                    result = max(current_rect)
+                end_arr[-1].append(result)
+        matrix = Matrix(values=end_arr)
+    return matrix
 
 if __name__ == '__main__':
     a = Matrix(values=[[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
